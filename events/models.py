@@ -7,7 +7,7 @@ class Event(models.Model):
     title = models.CharField(max_length=200, default='', verbose_name='Название')
     description = models.TextField(default='', verbose_name='Описание')
     date_start = models.DateTimeField(verbose_name='Дата начала')
-    participants_number = models.PositiveSmallIntegerField(max_length=10000, verbose_name='Количество участников')
+    participants_number = models.PositiveSmallIntegerField(verbose_name='Количество участников')
     is_private = models.BooleanField(default=False, verbose_name='Частное')
 
     class Meta:
