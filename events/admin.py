@@ -47,23 +47,21 @@ class FullnessFilter(admin.SimpleListFilter):
     parameter_name = 'fullness_filter'
 
     def lookups(self, request, model_admin):
-        filter_list = (
-            ('0', models.Event.FULLNESS_MIN),
-            ('1', models.Event.FULLNESS_MEDIUM),
-            ('2', models.Event.FULLNESS_MAX),
-        )
-        return filter_list
+        return models.Event.FULLNESS_VARIANTS
 
     def queryset(self, request, queryset):
-        events_id = []
-        for event in queryset:
-            if self.value() == '2' and event.participants_number == event.enrolls.count():
-                events_id.append(event.id)
-            elif self.value() == '1' and event.participants_number / 2 < event.enrolls.count() < event.participants_number:
-                events_id.append(event.id)
-            elif self.value() == '0' and event.participants_number / 2 >= event.enrolls.count():
-                events_id.append(event.id)
-        return queryset.filter(id__in=events_id)
+        filter_value = self.value()
+        if filter_value:
+            events_id = []
+            for event in queryset:
+                if self.value() == models.Event.FULLNESS_FULL and event.participants_number == event.enrolls.count():
+                    events_id.append(event.id)
+                elif self.value() == models.Event.FULLNESS_MIDDLE and event.participants_number / 2 < event.enrolls.count() < event.participants_number:
+                    events_id.append(event.id)
+                elif self.value() == models.Event.FULLNESS_FREE and event.participants_number / 2 >= event.enrolls.count():
+                    events_id.append(event.id)
+            return queryset.filter(id__in=events_id)
+        return queryset
 
 
 @admin.register(models.Event)

@@ -28,9 +28,19 @@ class Feature(models.Model):
 
 
 class Event(models.Model):
-    FULLNESS_MIN = '<= 50%'
-    FULLNESS_MEDIUM = '> 50%'
-    FULLNESS_MAX = 'sold-out'
+    FULLNESS_FREE = '0'
+    FULLNESS_MIDDLE = '1'
+    FULLNESS_FULL = '2'
+
+    FULLNESS_LEGEND_FREE = '<= 50%'
+    FULLNESS_LEGEND_MIDDLE = '> 50%'
+    FULLNESS_LEGEND_FULL = 'sold-out'
+
+    FULLNESS_VARIANTS = (
+        (FULLNESS_FREE, FULLNESS_LEGEND_FREE),
+        (FULLNESS_MIDDLE, FULLNESS_LEGEND_MIDDLE),
+        (FULLNESS_FULL, FULLNESS_LEGEND_FULL),
+    )
 
     title = models.CharField(max_length=200, default='', verbose_name='Название')
     description = models.TextField(default='', verbose_name='Описание')
@@ -55,11 +65,11 @@ class Event(models.Model):
     def display_places_left(self):
         places_left = self.participants_number - self.enrolls.count()
         if places_left == 0:
-            fullness = self.FULLNESS_MAX
+            fullness = self.FULLNESS_LEGEND_FULL
         elif self.enrolls.count() >= places_left:
-            fullness = self.FULLNESS_MEDIUM
+            fullness = self.FULLNESS_LEGEND_MIDDLE
         else:
-            fullness = self.FULLNESS_MIN
+            fullness = self.FULLNESS_FREE
         return f'{places_left} ({fullness})'
 
     display_places_left.short_description = 'Осталось мест'
