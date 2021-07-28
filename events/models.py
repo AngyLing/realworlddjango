@@ -84,8 +84,8 @@ class Event(models.Model):
 
     @ property
     def rate(self):
-        reviews_objects = self.reviews.objects.all()
-        return round(reviews_objects.rate.sum() / reviews_objects.rate.count(), 1)
+        reviews_objects = self.reviews.rate.objects.all()
+        return round(reviews_objects.sum() / reviews_objects.count(), 1)
 
     @property
     def logo_url(self):
