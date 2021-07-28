@@ -1,5 +1,9 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.urls import reverse
+# from django.utils.text import slugify
+# from unidecode import unidecode
 
 
 class Category(models.Model):
@@ -49,6 +53,7 @@ class Event(models.Model):
     is_private = models.BooleanField(default=False, verbose_name='Частное')
     category = models.ForeignKey(Category, null=True, on_delete=models.CASCADE, related_name='events')
     features = models.ManyToManyField(Feature, related_name='events')
+    logo = models.ImageField(upload_to='events/event', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Событие'
@@ -56,6 +61,9 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('events:event_detail', args=[str(self.pk)])
 
     def display_enroll_count(self):
         return self.enrolls.count()
@@ -73,6 +81,15 @@ class Event(models.Model):
         return f'{places_left} ({fullness})'
 
     display_places_left.short_description = 'Осталось мест'
+
+    @ property
+    def rate(self):
+        reviews_objects = self.reviews.objects.all()
+        return round(reviews_objects.rate.sum() / reviews_objects.rate.count(), 1)
+
+    @property
+    def logo_url(self):
+        return self.logo.url if self.logo else f'{settings.STATIC_URL}images/svg-icon/event.svg'
 
 
 class Enroll(models.Model):
