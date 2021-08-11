@@ -68,7 +68,7 @@ def create_review(request):
 
     else:
         new_review = Review(
-            user=data['user_name'],
+            user=request.user,
             event=event,
             rate=data['rate'],
             text=data['text'],
