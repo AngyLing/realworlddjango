@@ -68,7 +68,7 @@ class FullnessFilter(admin.SimpleListFilter):
 class EventAdmin(admin.ModelAdmin):
     ordering = ['date_start']
     readonly_fields = ['display_enroll_count', 'display_places_left', ]
-    list_display = ['title', 'category', 'date_start', 'is_private', 'participants_number',
+    list_display = ['id', 'title', 'category', 'date_start', 'is_private', 'participants_number',
                     'display_enroll_count', 'display_places_left', ]
     list_display_links = ['title', ]
     list_select_related = ['category', ]

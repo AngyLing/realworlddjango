@@ -1,20 +1,33 @@
 from django.views.decorators.http import require_POST
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
-from events.models import Event, Review
+from events.models import Event, Review, Category, Feature
+import datetime
 
 
 def event_list(request):
     template_name = 'events/event_list.html'
-    return render(request, template_name)
+    context = {
+        'event_objects': Event.objects.all(),
+        'category_objects': Category.objects.all(),
+        'feature_objects': Feature.objects.all(),
+    }
+
+    return render(request, template_name, context)
 
 
 def event_detail(request, pk):
     template_name = 'events/event_detail.html'
     event = get_object_or_404(Event, pk=pk)
+    places_left = event.participants_number - event.enrolls.count()
+    try:
+        fullness_percent = int(event.enrolls.count() * 100 / event.participants_number)
+    except ZeroDivisionError:
+        fullness_percent = 0
     context = {
         'event': event,
-        'places_left': event.participants_number - event.display_enroll_count(),
+        'places_left': places_left,
+        'fullness_percent': fullness_percent,
     }
     return render(request, template_name, context)
 
@@ -24,29 +37,38 @@ def create_review(request):
     data = {
         'ok': True,
         'msg': '',
-        'rate': int(request.POST.get('rate', 0) or 0),
-        'text': request.POST.get('text', ''),
-        'created': '',
-        'user_name': request.POST.get('user_name', '')
+        'rate': request.POST.get('rate'),
+        'text': request.POST.get('text'),
+        'created': datetime.date.today(),
+        'user_name': ''
     }
 
-    if request.user.is_authenticated is False:
+    event = Event.objects.get(pk=request.POST.get('event_id'))
+
+    if not request.user.is_authenticated:
         data['msg'] = 'Отзывы могут оставлять только зарегистрированные пользователи'
         data['ok'] = False
+        return JsonResponse(data)
+
+    data['user_name'] = request.user.__str__()
 
     if data['rate'] == 0 or data['text'] == '':
         data['msg'] = 'Оценка и текст отзыва - обязательные поля'
         data['ok'] = False
 
-    if data['user_name'] in Event.reviews.user.objects.all():
+    if Review.objects.filter(user=request.user, event=event).count() != 0:
         data['msg'] = 'Вы уже оставляли отзыв к этому событию'
         data['ok'] = False
 
-    if data['ok'] is True:
-        new_review = Review()
-        new_review.user = data['user_name']
-        new_review.event = Event.title
-        new_review.rate = data['rate']
-        new_review.rate = data['text']
+    else:
+        new_review = Review(
+            user=data['user_name'],
+            event=event,
+            rate=data['rate'],
+            text=data['text'],
+            created=data['created'],
+            updated=data['created']
+        )
         new_review.save()
-    return HttpResponse(data)
+
+        return JsonResponse(data)
