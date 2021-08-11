@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -43,7 +44,12 @@ def create_review(request):
         'user_name': ''
     }
 
-    event = Event.objects.get(pk=request.POST.get('event_id'))
+    try:
+        event = Event.objects.get(pk=request.POST.get('event_id'))
+    except ObjectDoesNotExist:
+        data['msg'] = 'Событие не найдено'
+        data['ok'] = False
+        return JsonResponse(data)
 
     if not request.user.is_authenticated:
         data['msg'] = 'Отзывы могут оставлять только зарегистрированные пользователи'
@@ -52,12 +58,12 @@ def create_review(request):
 
     data['user_name'] = request.user.__str__()
 
-    if data['rate'] == 0 or data['text'] == '':
-        data['msg'] = 'Оценка и текст отзыва - обязательные поля'
-        data['ok'] = False
-
     if Review.objects.filter(user=request.user, event=event).count() != 0:
         data['msg'] = 'Вы уже оставляли отзыв к этому событию'
+        data['ok'] = False
+
+    elif data['rate'] == 0 or data['text'] == '':
+        data['msg'] = 'Оценка и текст отзыва - обязательные поля'
         data['ok'] = False
 
     else:
