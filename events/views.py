@@ -1,36 +1,103 @@
+from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse
+from django.views.generic import ListView, UpdateView, DetailView, TemplateView, CreateView
+from django.views.generic.edit import ProcessFormView
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
-from events.models import Event, Review, Category, Feature
+from django.urls import reverse_lazy
+
+from events.models import Event, Review, Category, Feature, Enroll
 import datetime
+from events.forms import EventCreateUpdateForm, EventEnrollForm
 
 
-def event_list(request):
+class EventListView(ListView):
+    model = Event
     template_name = 'events/event_list.html'
-    context = {
-        'event_objects': Event.objects.all(),
-        'category_objects': Category.objects.all(),
-        'feature_objects': Feature.objects.all(),
-    }
+    paginate_by = 9
 
-    return render(request, template_name, context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['event_objects'] = Event.objects.all()
+        context['category_objects'] = Category.objects.all()
+        context['feature_objects'] = Feature.objects.all()
+        return context
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.order_by('-pk')
 
 
-def event_detail(request, pk):
+class LoginRequiredMixin:
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden('Недостаточно прав')
+        return super().get(request, *args, **kwargs)
+
+
+class EventDetailView(DetailView):
+    model = Event
     template_name = 'events/event_detail.html'
-    event = get_object_or_404(Event, pk=pk)
-    places_left = event.participants_number - event.enrolls.count()
-    try:
-        fullness_percent = int(event.enrolls.count() * 100 / event.participants_number)
-    except ZeroDivisionError:
-        fullness_percent = 0
-    context = {
-        'event': event,
-        'places_left': places_left,
-        'fullness_percent': fullness_percent,
-    }
-    return render(request, template_name, context)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        event = self.object
+
+        places_left = event.participants_number - event.enrolls.count()
+        try:
+            fullness_percent = int(event.enrolls.count() * 100 / event.participants_number)
+        except ZeroDivisionError:
+            fullness_percent = 0
+
+        context['event'] = event
+        context['places_left'] = places_left
+        context['fullness_percent'] = fullness_percent
+        return context
+
+
+class EventEnrollView(LoginRequiredMixin, CreateView):
+    model = Enroll
+    form_class = EventEnrollForm
+
+    def get_success_url(self):
+        return self.object.event.get_absolute_url()
+
+    def form_valid(self, form):
+        new_enroll = Enroll(
+            user=self.request.user,
+            event=self.object,
+            created=datetime.date.today()
+
+        )
+        new_enroll.save()
+        messages.success(self.request, f'Запись добавлена')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Вы уже записаны на это событие')
+        event = form.cleaned_data.get('event', None)
+        redirect_url = event.get_absolute_url() if event else reverse_lazy('events:event_list')
+        return HttpResponseRedirect(redirect_url)
+
+
+class EventUpdateView(LoginRequiredMixin, UpdateView):
+    model = Event
+    template_name = 'events/event_update.html'
+    form_class = EventCreateUpdateForm
+    success_url = reverse_lazy('events: event_detail')
+
+    def get_context_data(self, **kwargs):
+        event = self.object
+        context = super().get_context_data(**kwargs)
+        context['enroll_list'] = event.enrolls.all()
+
+        review_users = []
+        review_list = event.reviews.all()
+        for review in review_list:
+            review_users.append(review.user)
+        context['review_user_list'] = review_users
+        return context
 
 
 @require_POST
