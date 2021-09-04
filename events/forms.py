@@ -2,7 +2,7 @@ from django import forms
 from events.models import Event, Enroll
 
 
-class EventCreateUpdateForm(forms.ModelForm):
+class EventUpdateForm(forms.ModelForm):
     date_start = forms.DateTimeField(label='Дата начала',
                                      widget=forms.DateTimeInput(format="%Y-%m-%dT%H:%M",
                                                                 attrs={'type': 'datetime-local'})
@@ -16,6 +16,8 @@ class EventCreateUpdateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['date_start'].widget.attrs.update({'class': 'form-control'})
 
+
+class EventCreateForm(EventUpdateForm):
     def clean(self):
         cleaned_data = super().clean()
 

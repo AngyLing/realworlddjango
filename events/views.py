@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.http import require_POST
-from django.views.generic import ListView, UpdateView, DetailView, TemplateView, CreateView
+from django.views.generic import ListView, UpdateView, DetailView, TemplateView, CreateView, DeleteView
 from django.views.generic.edit import ProcessFormView
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
@@ -9,7 +9,7 @@ from django.urls import reverse_lazy
 
 from events.models import Event, Review, Category, Feature, Enroll
 import datetime
-from events.forms import EventCreateUpdateForm, EventEnrollForm
+from events.forms import EventUpdateForm, EventEnrollForm, EventCreateForm
 
 
 class EventListView(ListView):
@@ -58,7 +58,7 @@ class EventDetailView(DetailView):
 
 class EventCreateView(LoginRequiredMixin, CreateView):
     model = Event
-    form_class = EventCreateUpdateForm
+    form_class = EventCreateForm
     template_name = 'events/event_update.html'
 
     success_url = reverse_lazy('events:event_list')
@@ -100,7 +100,7 @@ class EventEnrollView(LoginRequiredMixin, CreateView):
 class EventUpdateView(LoginRequiredMixin, UpdateView):
     model = Event
     template_name = 'events/event_update.html'
-    form_class = EventCreateUpdateForm
+    form_class = EventUpdateForm
 
     def get_context_data(self, **kwargs):
         event = self.object
@@ -121,6 +121,17 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
     def form_invalid(self, form):
         messages.error(self.request, form.non_field_errors())
         return super().form_invalid(form)
+
+
+class EventDeleteView(DeleteView):
+    model = Event
+    template_name = 'events/event_update.html'
+    success_url = reverse_lazy('events:event_list')
+
+    def delete(self, request, *args, **kwargs):
+        result = super().delete(request, *args, **kwargs)
+        messages.success(request, f'Событие {self.object} удалено')
+        return result
 
 
 @require_POST
