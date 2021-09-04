@@ -61,6 +61,8 @@ class EventCreateView(LoginRequiredMixin, CreateView):
     form_class = EventCreateUpdateForm
     template_name = 'events/event_update.html'
 
+    success_url = reverse_lazy('events:event_list')
+
     def form_valid(self, form):
         messages.success(self.request, 'Новое событие создано успешно')
         return super().form_valid(form)
