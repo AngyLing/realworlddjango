@@ -97,7 +97,7 @@
                                     <tbody>
                                     <tr>
                                         <th data-test="enroll_counter">{{ forloop.counter }}</th>
-                                        <td data-test="enroll_user">{{ enroll.user.first_name }} {{ enroll.user.last_name }}</td>
+                                        <td data-test="enroll_user">{{ enroll.user.first_name|default:"-" }} {{ enroll.user.last_name|default:"-"}}</td>
                                         <td data-test="enroll_email">{{ enroll.user.email }}</td>
                                         {% for review in event.reviews.all %}
                                         {% if enroll.user == review.user %}
@@ -154,12 +154,12 @@
                                             удалить событие безвозвратно?
                                         </p>
                                         <div class="button-list">
-                                            <form action="." method="post">
+                                            <form action="{{ event.get_delete_url }}" method="post">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-danger">
                                                     Да, удалить
                                                 </button>
-                                                <a href="{% url 'events:event_detail'  event.pk %}" class="btn btn-success">
+                                                <a href="{{ event.get_absolute_url }}" class="btn btn-success">
                                                     Нет, не удалять
                                                 </a>
                                             </form>

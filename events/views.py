@@ -123,7 +123,7 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_invalid(form)
 
 
-class EventDeleteView(DeleteView):
+class EventDeleteView(LoginRequiredMixin, DeleteView):
     model = Event
     template_name = 'events/event_update.html'
     success_url = reverse_lazy('events:event_list')
