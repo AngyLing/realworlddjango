@@ -96,6 +96,12 @@ class Event(models.Model):
     def logo_url(self):
         return self.logo.url if self.logo else f'{settings.STATIC_URL}images/svg-icon/event.svg'
 
+    def get_update_url(self):
+        return reverse('events:event_update', args=[str(self.pk)])
+
+    def get_delete_url(self):
+        return reverse('events:event_delete', args=[str(self.pk)])
+
 
 class Enroll(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name='enrolls')
