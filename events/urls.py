@@ -9,6 +9,7 @@ urlpatterns = [
     path('list/', views.EventListView.as_view(), name='event_list'),
     path('detail/<int:pk>/', views.EventDetailView.as_view(), name='event_detail'),
 
+    path('event-create/', views.EventCreateView.as_view(), name='event_create'),
     path('event-update/<int:pk>', views.EventUpdateView.as_view(), name='event_update'),
     path('event-enroll/', require_POST(views.EventEnrollView.as_view()), name='event_enroll'),
 ]

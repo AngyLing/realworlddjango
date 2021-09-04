@@ -54,30 +54,21 @@
                             </h5>
                         </div>
                         {{ form.non_field_errors }}
-                        <div class="card-body text-center">
-                            <img src="{{ event.logo_url }}" class="img-fluid" alt="profile"
-                                 style="width: 250px">
-                        </div>
-                    </div>
-                    <div class="card mt-3">
-                        <div class="card-header">
-
-                            <h5 class="card-title mb-0">Основная информация</h5>
-                        </div>
                         <div class="card-body">
-                            <form>
-                                <div class="mb-3">
-                                    <label for="id_title" class="form-label">Название</label>
-                                    <input type="text" class="form-control" id="id_title">
-                                </div>
-                                <div class="mb-3 form-check">
-                                    <input type="checkbox" class="form-check-input" id="id_private">
-                                    <label class="form-check-label" for="id_private">Частное</label>
-                                </div>
-                                <div class="mb-3 text-start">
-                                    <label for="formFile" class="form-label">Загрузить изображение</label>
-                                    <input class="form-control" type="file" id="formFile">
-                                </div>
+                            <form action="." method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {% for field in form %}
+                                    <div class="mb-3">
+                                        {{ field.label_tag }}
+                                        {{ field }}
+                                    </div>
+                                    {% if field.errors %}
+                                        <div class="alert alert-danger">
+                                            {{ field.errors }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+
                                 <button type="submit" class="btn btn-primary">
                                     Сохранить
                                 </button>

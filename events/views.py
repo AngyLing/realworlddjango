@@ -56,6 +56,20 @@ class EventDetailView(DetailView):
         return context
 
 
+class EventCreateView(LoginRequiredMixin, CreateView):
+    model = Event
+    form_class = EventCreateUpdateForm
+    template_name = 'events/event_update.html'
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Новое событие создано успешно')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, form.non_field_errors())
+        return super().form_invalid(form)
+
+
 class EventEnrollView(LoginRequiredMixin, CreateView):
     model = Enroll
     form_class = EventEnrollForm
@@ -85,7 +99,6 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
     model = Event
     template_name = 'events/event_update.html'
     form_class = EventCreateUpdateForm
-    success_url = reverse_lazy('events: event_detail')
 
     def get_context_data(self, **kwargs):
         event = self.object
@@ -98,6 +111,14 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
             review_users.append(review.user)
         context['review_user_list'] = review_users
         return context
+
+    def form_valid(self, form):
+        messages.success(self.request, f'Cобытие {form.cleaned_data["title"]} успешно изменено')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, form.non_field_errors())
+        return super().form_invalid(form)
 
 
 @require_POST
