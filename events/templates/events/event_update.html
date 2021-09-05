@@ -93,7 +93,7 @@
                                         <th>Оценка</th>
                                     </tr>
                                     </thead>
-                                    {% for enroll in enroll_list %}
+                                    {% for enroll in event.enrolls.all %}
                                     <tbody>
                                     <tr>
                                         <th data-test="enroll_counter">{{ forloop.counter }}</th>

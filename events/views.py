@@ -32,13 +32,13 @@ class EventListView(ListView):
 class LoginRequiredMixin:
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return HttpResponseForbidden('Недостаточно прав', status=403)
+            return HttpResponseForbidden('Недостаточно прав')
         return super().get(request, *args, **kwargs)
-    #
-    # def post(self, request, *args, **kwargs):
-    #     if not request.user.is_authenticated:
-    #         return HttpResponseForbidden('Недостаточно прав')
-    #     return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden('Недостаточно прав')
+        return super().post(request, *args, **kwargs)
 
 
 class EventDetailView(DetailView):
@@ -110,7 +110,6 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         event = self.object
         context = super().get_context_data(**kwargs)
-        context['enroll_list'] = event.enrolls.all()
 
         review_users = []
         review_list = event.reviews.all()
