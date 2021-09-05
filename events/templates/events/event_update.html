@@ -101,7 +101,9 @@
                                         <td data-test="enroll_email">{{ enroll.user.email }}</td>
                                         {% for review in event.reviews.all %}
                                         {% if enroll.user == review.user %}
-                                            <td data-test="enroll_rate">{{review.rate}}</td>
+                                            <td data-test="enroll_rate">{{ review.rate }}</td>
+                                        {% elif forloop.last and enroll.user not in review_user_list %}
+                                            <td data-test="enroll_rate">0</td>
                                         {% endif %}
                                         {% endfor %}
                                     </tr>

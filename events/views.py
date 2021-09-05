@@ -116,6 +116,7 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
         for review in review_list:
             review_users.append(review.user)
         context['review_user_list'] = review_users
+
         return context
 
     def form_valid(self, form):
