@@ -113,6 +113,7 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
 
         review_users = []
         review_list = event.reviews.all()
+        context['review_list'] = review_list.order_by('rate')
         for review in review_list:
             review_users.append(review.user)
         context['review_user_list'] = review_users
