@@ -124,7 +124,7 @@
                             {% for review in event.reviews.all %}
                                 <!-- Start Review item -->
                                 <h5 class="me-2" data-test="review_user">
-                                    {{ review.user.first_name }}
+                                    {{ review.user.first_name }} {{ review.user.last_name }}
                                     <span class="badge bg-warning" data-test="review_rate">
                                         {{ review.rate }}
                                     </span>
